@@ -12,7 +12,7 @@ impl Player {
             plane: Plane {
                 origin: Vec3::ZERO,
                 normal: Vec3::new(0.0, 0.0, 1.0),
-            }
+            },
         }
     }
 }

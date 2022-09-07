@@ -1,13 +1,11 @@
 use bevy::prelude::*;
-use crate::components::{Player, Speed};
 use crate::io::Control;
 
 pub fn keyboard_input_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&Player, &Speed, &mut Transform)>
+    mut control: ResMut<Control>,
 ) {
     let mut direction = Vec3::ZERO;
-    let (_, Speed(speed), mut player_transform) = query.single_mut();
     if keyboard_input.pressed(KeyCode::A) {
         direction.x -= 1.0;
     }
@@ -20,7 +18,7 @@ pub fn keyboard_input_system(
     if keyboard_input.pressed(KeyCode::S) {
         direction.y -= 1.0;
     }
-    player_transform.translation += direction.normalize_or_zero() * *speed;
+    control.direction_normal = direction.normalize_or_zero();
 }
 
 pub fn mouse_input_system(

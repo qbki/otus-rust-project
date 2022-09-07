@@ -7,11 +7,10 @@ use bevy::prelude::*;
 use components::{Player, Speed};
 
 fn player_control_system(
-    mut player: Query<(&Player, &mut Transform)>,
+    mut player: Query<(&Player, &mut Transform, &Speed)>,
     control: Res<io::Control>,
 ) {
-    let (player, mut player_transform) = player.single_mut();
-
+    let (player, mut player_transform, Speed(speed)) = player.single_mut();
 
     if let Some(hit_point) = player.plane.hit_test(&control.cursor_ray) {
         let angle_vector = hit_point - player_transform.translation;
@@ -22,6 +21,8 @@ fn player_control_system(
             *player_transform = matrix;
         }
     }
+
+    player_transform.translation += control.direction_normal * *speed;
 }
 
 fn setup(

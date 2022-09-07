@@ -3,6 +3,7 @@ use crate::math::Ray;
 
 pub struct Control {
     pub cursor_ray: Ray,
+    pub direction_normal: Vec3,
 }
 
 impl Control {
@@ -11,7 +12,8 @@ impl Control {
             cursor_ray: Ray {
                 origin: Vec3::ZERO,
                 normal: Vec3::new(0.0, 0.0, -1.0),
-            }
+            },
+            direction_normal: Vec3::ZERO,
         }
     }
 }
