@@ -4,9 +4,12 @@ mod components;
 
 use std::f32::consts::PI;
 use bevy::prelude::*;
+use bevy::prelude::shape::UVSphere;
 use components::{Player, Speed};
+use components::Enemy;
 
 fn player_control_system(
+    time: Res<Time>,
     mut player: Query<(&Player, &mut Transform, &Speed)>,
     control: Res<io::Control>,
 ) {
@@ -22,7 +25,15 @@ fn player_control_system(
         }
     }
 
-    player_transform.translation += control.direction_normal * *speed;
+    player_transform.translation += control.direction_normal * (time.delta_seconds() * *speed);
+}
+
+fn enemy_system(
+    time: Res<Time>,
+    mut player: Query<(&Enemy, &mut Transform, &Speed)>,
+) {
+    let (_, mut transform, Speed(speed)) = player.single_mut();
+    transform.rotate_z(time.delta_seconds() * *speed);
 }
 
 fn setup(
@@ -36,16 +47,29 @@ fn setup(
     });
 
     let ship_mesh = asset_server.load("ship.glb#Mesh0/Primitive0");
+    let enemy_mesh = asset_server.load("enemy.glb#Mesh0/Primitive0");
+
+    UVSphere
 
     commands
         .spawn_bundle(PbrBundle {
             mesh: ship_mesh,
-            material: material_handle,
+            material: material_handle.clone(),
             transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
         })
         .insert(Player::new())
-        .insert(Speed(0.2));
+        .insert(Speed(10.0));
+
+    commands
+        .spawn_bundle(PbrBundle {
+            mesh: enemy_mesh,
+            material: material_handle.clone(),
+            transform: Transform::from_xyz(4.0, 0.0, 0.0),
+            ..default()
+        })
+        .insert(Enemy)
+        .insert(Speed(0.5));
 
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(0.0, 4.0, 4.0),
@@ -65,6 +89,7 @@ fn main() {
         .add_system(io::keyboard_input_system)
         .add_system(io::mouse_input_system)
         .add_system(player_control_system)
+        .add_system(enemy_system)
         .insert_resource(io::Control::new())
         .run();
 }
