@@ -28,7 +28,6 @@ fn player_control_system(
         }
         for mut weapon in weapons.0.iter_mut() {
             weapon.direction = angle_vector.normalize_or_zero();
-            weapon.position = player_transform.translation + weapon.direction * 1.5;
             weapon.is_shooting = control.is_shooting;
         }
     }
@@ -38,10 +37,23 @@ fn player_control_system(
 
 fn enemy_system(
     time: Res<Time>,
-    mut query: Query<(&Enemy, &mut Transform, &Speed)>,
+    mut query: Query<(&mut Enemy, &mut Transform, &RotationSpeed, &mut Weapons)>,
 ) {
-    let (_, mut transform, Speed(speed)) = query.single_mut();
-    transform.rotate_z(time.delta_seconds() * *speed);
+    let (mut enemy, mut transform, RotationSpeed(rotation_speed), mut weapons) = query.single_mut();
+    enemy.angle += time.delta_seconds() * *rotation_speed;
+    let mut new_transform = Transform::from_translation(transform.translation);
+    new_transform.rotate_z(enemy.angle);
+    *transform = new_transform;
+
+    let length = weapons.0.len();
+    for (i, mut weapon) in weapons.0.iter_mut().enumerate() {
+        let angle = enemy.angle + (PI * 2.0 / (length as f32)) * (i as f32);
+        weapon.direction = Vec3::new(
+            f32::cos(angle),
+            f32::sin(angle),
+            0.0
+        );
+    }
 }
 
 fn setup(
@@ -74,8 +86,26 @@ fn setup(
             ..default()
         })
         .insert(Player::new())
-        .insert(Weapons(vec!(Weapon::new())))
+        .insert(Weapons(vec![Weapon {
+            speed: 20.0,
+            muzzle_distance: 1.2,
+            ..default()
+        }]))
         .insert(Speed(10.0));
+
+    let enemy_weapon = Weapon {
+        max_time: 0.5,
+        is_shooting: true,
+        speed: 4.0,
+        muzzle_distance: 1.7,
+        ..default()
+    };
+    let enemy_weapons = vec![
+        Weapon { direction: Vec3::new(0.0, 1.0, 0.0), ..enemy_weapon },
+        Weapon { direction: Vec3::new(0.0, -1.0, 0.0), ..enemy_weapon },
+        Weapon { direction: Vec3::new(1.0, 0.0, 0.0), ..enemy_weapon },
+        Weapon { direction: Vec3::new(-1.0, 0.0, 0.0), ..enemy_weapon },
+    ];
 
     commands
         .spawn_bundle(PbrBundle {
@@ -84,8 +114,9 @@ fn setup(
             transform: Transform::from_xyz(4.0, 0.0, 0.0),
             ..default()
         })
-        .insert(Enemy)
-        .insert(Speed(0.5));
+        .insert(Enemy::default())
+        .insert(Weapons(enemy_weapons))
+        .insert(RotationSpeed(0.5));
 
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(0.0, 4.0, 4.0),
