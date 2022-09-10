@@ -1,11 +1,16 @@
 use bevy::prelude::*;
-use crate::io::Control;
+use bevy::app::AppExit;
+use crate::resources::Control;
 
 pub fn keyboard_input_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut control: ResMut<Control>,
+    mut event_writer: EventWriter<AppExit>,
 ) {
     let mut direction = Vec3::ZERO;
+    if keyboard_input.pressed(KeyCode::Escape) {
+        event_writer.send(AppExit);
+    }
     if keyboard_input.pressed(KeyCode::A) {
         direction.x -= 1.0;
     }
@@ -23,6 +28,7 @@ pub fn keyboard_input_system(
 
 pub fn mouse_input_system(
     mut control: ResMut<Control>,
+    mouse_button: Res<Input<MouseButton>>,
     mut mouse_motion_events: EventReader<CursorMoved>,
     mut camera: Query<(&Camera, &GlobalTransform, &Transform)>,
 ) {
@@ -37,5 +43,5 @@ pub fn mouse_input_system(
         control.cursor_ray.origin = camera_transform.translation;
         control.cursor_ray.normal = (camera_transform.translation - ndc_to_world_matrix.project_point3(screen_ndc_2d.extend(-1.0))).normalize();
     }
+    control.is_shooting = mouse_button.pressed(MouseButton::Left);
 }
-

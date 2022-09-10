@@ -4,6 +4,7 @@ use crate::math::Ray;
 pub struct Control {
     pub cursor_ray: Ray,
     pub direction_normal: Vec3,
+    pub is_shooting: bool,
 }
 
 impl Control {
@@ -14,6 +15,7 @@ impl Control {
                 normal: Vec3::new(0.0, 0.0, -1.0),
             },
             direction_normal: Vec3::ZERO,
+            is_shooting: false,
         }
     }
 }
