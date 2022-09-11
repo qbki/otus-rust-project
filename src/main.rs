@@ -16,43 +16,43 @@ fn player_control_system(
     mut query: Query<(&Player, &mut Transform, &Speed, &mut Weapons)>,
     control: Res<Control>,
 ) {
-    let (player, mut player_transform, Speed(speed), mut weapons) = query.single_mut();
-
-    if let Some(hit_point) = player.plane.hit_test(&control.cursor_ray) {
-        let angle_vector = hit_point - player_transform.translation;
-        let angle = angle_vector.y.atan2(angle_vector.x);
-        if angle.is_normal() {
-            let mut matrix = Transform::from_translation(player_transform.translation);
-            matrix.rotate_z(angle - PI * 0.5);
-            *player_transform = matrix;
+    for (player, mut player_transform, Speed(speed), mut weapons) in &mut query {
+        if let Some(hit_point) = player.plane.hit_test(&control.cursor_ray) {
+            let angle_vector = hit_point - player_transform.translation;
+            let angle = angle_vector.y.atan2(angle_vector.x);
+            if angle.is_normal() {
+                let mut matrix = Transform::from_translation(player_transform.translation);
+                matrix.rotate_z(angle - PI * 0.5);
+                *player_transform = matrix;
+            }
+            for mut weapon in weapons.0.iter_mut() {
+                weapon.direction = angle_vector.normalize_or_zero();
+                weapon.is_shooting = control.is_shooting;
+            }
         }
-        for mut weapon in weapons.0.iter_mut() {
-            weapon.direction = angle_vector.normalize_or_zero();
-            weapon.is_shooting = control.is_shooting;
-        }
+        player_transform.translation += control.direction_normal * (time.delta_seconds() * *speed);
     }
-
-    player_transform.translation += control.direction_normal * (time.delta_seconds() * *speed);
 }
 
 fn enemy_system(
     time: Res<Time>,
     mut query: Query<(&mut Enemy, &mut Transform, &RotationSpeed, &mut Weapons)>,
 ) {
-    let (mut enemy, mut transform, RotationSpeed(rotation_speed), mut weapons) = query.single_mut();
-    enemy.angle += time.delta_seconds() * *rotation_speed;
-    let mut new_transform = Transform::from_translation(transform.translation);
-    new_transform.rotate_z(enemy.angle);
-    *transform = new_transform;
+    for (mut enemy, mut transform, RotationSpeed(rotation_speed), mut weapons) in &mut query {
+        enemy.angle += time.delta_seconds() * *rotation_speed;
+        let mut new_transform = Transform::from_translation(transform.translation);
+        new_transform.rotate_z(enemy.angle);
+        *transform = new_transform;
 
-    let length = weapons.0.len();
-    for (i, mut weapon) in weapons.0.iter_mut().enumerate() {
-        let angle = enemy.angle + (PI * 2.0 / (length as f32)) * (i as f32);
-        weapon.direction = Vec3::new(
-            f32::cos(angle),
-            f32::sin(angle),
-            0.0
-        );
+        let length = weapons.0.len();
+        for (i, mut weapon) in weapons.0.iter_mut().enumerate() {
+            let angle = enemy.angle + (PI * 2.0 / (length as f32)) * (i as f32);
+            weapon.direction = Vec3::new(
+                f32::cos(angle),
+                f32::sin(angle),
+                0.0
+            );
+        }
     }
 }
 
@@ -91,6 +91,8 @@ fn setup(
             muzzle_distance: 1.2,
             ..default()
         }]))
+        .insert(Collider::new(1.0))
+        .insert(Lives(3))
         .insert(Speed(10.0));
 
     let enemy_weapon = Weapon {
@@ -116,6 +118,8 @@ fn setup(
         })
         .insert(Enemy::default())
         .insert(Weapons(enemy_weapons))
+        .insert(Collider::new(1.4))
+        .insert(Lives(10))
         .insert(RotationSpeed(0.5));
 
     commands.spawn_bundle(PointLightBundle {
@@ -139,6 +143,7 @@ fn main() {
         .add_system(enemy_system)
         .add_system(projectile_system)
         .add_system(weapon_spawn_projectile)
+        .add_system(projectile_hit_system)
         .insert_resource(Control::new())
         .insert_resource(Handlers::new())
         .run();

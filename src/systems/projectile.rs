@@ -16,3 +16,24 @@ pub fn projectile_system(
     }
 }
 
+pub fn projectile_hit_system(
+    mut commands: Commands,
+    query_projectiles: Query<(Entity, &Transform), With<Projectile>>,
+    mut query_agents: Query<(Entity, &mut Transform, &Collider, &mut Lives), Without<Projectile>>,
+) {
+    for (projectile_entity, projectile_transform) in &query_projectiles {
+        for (agent_entity, mut agent_transform, collider, mut lives) in &mut query_agents{
+            let has_hit = collider.hit_test(&agent_transform.translation, &projectile_transform.translation);
+            if has_hit {
+                commands.entity(projectile_entity).despawn();
+                let new_translation = (agent_transform.translation - projectile_transform.translation).normalize() * 0.2;
+                agent_transform.translation += new_translation;
+                lives.0 -= 1;
+                if lives.0 <= 0 {
+                    commands.entity(agent_entity).despawn();
+                }
+                return;
+            }
+        }
+    }
+}
