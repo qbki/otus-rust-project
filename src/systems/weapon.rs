@@ -3,16 +3,19 @@ use crate::components::*;
 use crate::consts::*;
 use crate::resources::*;
 
-pub fn weapon_spawn_projectile(
-    time: Res<Time>,
+pub fn spawn_projectiles_system(
+    time: Res<Elapsed>,
     mut query: Query<(&mut Weapons, &Transform)>,
     mut commands: Commands,
     mut material_handlers: ResMut<Handlers>,
 ) {
-    let elapsed_time = time.delta_seconds();
+    if time.is_paused {
+        return;
+    }
+
     for (mut weapons, transform) in &mut query {
         for weapon in weapons.0.iter_mut() {
-            weapon.time_left -= elapsed_time;
+            weapon.time_left -= time.seconds;
             if weapon.time_left <= 0.0 && weapon.is_shooting {
                 make_projectile(&mut commands, &mut material_handlers, &weapon, &transform);
                 weapon.time_left = weapon.max_time;

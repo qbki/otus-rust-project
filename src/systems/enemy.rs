@@ -1,13 +1,18 @@
 use std::f32::consts::PI;
 use bevy::prelude::*;
 use crate::components::*;
+use crate::resources::Elapsed;
 
 pub fn enemy_system(
-    time: Res<Time>,
+    time: Res<Elapsed>,
     mut query: Query<(&mut Enemy, &mut Transform, &RotationSpeed, &mut Weapons)>,
 ) {
+    if time.is_paused {
+        return;
+    }
+
     for (mut enemy, mut transform, RotationSpeed(rotation_speed), mut weapons) in &mut query {
-        enemy.angle += time.delta_seconds() * *rotation_speed;
+        enemy.angle += time.seconds * *rotation_speed;
         let mut new_transform = Transform::from_translation(transform.translation);
         new_transform.rotate_z(enemy.angle);
         *transform = new_transform;

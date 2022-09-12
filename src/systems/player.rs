@@ -4,10 +4,14 @@ use crate::components::*;
 use crate::resources::*;
 
 pub fn player_control_system(
-    time: Res<Time>,
+    time: Res<Elapsed>,
     mut query: Query<(&Player, &mut Transform, &Speed, &mut Weapons)>,
     control: Res<Control>,
 ) {
+    if time.is_paused {
+        return;
+    }
+
     for (player, mut player_transform, Speed(speed), mut weapons) in &mut query {
         if let Some(hit_point) = player.plane.hit_test(&control.cursor_ray) {
             let angle_vector = hit_point - player_transform.translation;
@@ -22,6 +26,6 @@ pub fn player_control_system(
                 weapon.is_shooting = control.is_shooting;
             }
         }
-        player_transform.translation += control.direction_normal * (time.delta_seconds() * *speed);
+        player_transform.translation += control.direction_normal * (time.seconds * *speed);
     }
 }

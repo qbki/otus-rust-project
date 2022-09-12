@@ -4,7 +4,7 @@ mod components;
 mod systems;
 mod consts;
 
-use bevy::prelude::{*, shape::UVSphere};
+use bevy::prelude::*;
 use components::*;
 use consts::*;
 use systems::*;
@@ -86,7 +86,7 @@ fn setup(
     // ***** Walls *****
     {
         let radius = 1.4;
-        let uv_sphere_mesh = meshes.add((UVSphere {
+        let uv_sphere_mesh = meshes.add((shape::UVSphere {
             radius,
             ..default()
         }).into());
@@ -118,15 +118,17 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
+        .add_system(elapsed_system)
         .add_system(keyboard_input_system)
         .add_system(mouse_input_system)
         .add_system(player_control_system)
         .add_system(enemy_system)
         .add_system(projectile_system)
-        .add_system(weapon_spawn_projectile)
+        .add_system(spawn_projectiles_system)
         .add_system(projectile_hit_actor_system)
         .add_system(projectile_hit_wall_system)
         .insert_resource(Control::new())
         .insert_resource(Handlers::new())
+        .insert_resource(Elapsed::new())
         .run();
 }

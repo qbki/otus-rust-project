@@ -1,15 +1,19 @@
 use bevy::prelude::*;
 use crate::components::*;
+use crate::resources::*;
 
 pub fn projectile_system(
     mut commands: Commands,
-    time: Res<Time>,
+    time: Res<Elapsed>,
     mut query: Query<(Entity, &mut Projectile, &mut Transform, &Speed, &MoveDirection)>,
 ) {
+    if time.is_paused {
+        return;
+    }
+
     for (entity, mut projectile, mut transform, Speed(speed), MoveDirection(direction)) in &mut query {
-        let delta_time = time.delta_seconds();
-        transform.translation += *direction * *speed * delta_time;
-        projectile.life_time -= delta_time;
+        transform.translation += *direction * *speed * time.seconds;
+        projectile.life_time -= time.seconds;
         if projectile.life_time <= 0.0 {
             commands.entity(entity).despawn();
         }
