@@ -8,7 +8,7 @@ pub struct Projectile {
 impl Default for Projectile {
     fn default() -> Self {
         Self {
-            life_time: 6.0,
+            life_time: 7.0,
         }
     }
 }

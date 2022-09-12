@@ -4,62 +4,17 @@ mod components;
 mod systems;
 mod consts;
 
-use std::f32::consts::PI;
-use bevy::prelude::*;
+use bevy::prelude::{*, shape::UVSphere};
 use components::*;
 use consts::*;
 use systems::*;
 use resources::*;
 
-fn player_control_system(
-    time: Res<Time>,
-    mut query: Query<(&Player, &mut Transform, &Speed, &mut Weapons)>,
-    control: Res<Control>,
-) {
-    for (player, mut player_transform, Speed(speed), mut weapons) in &mut query {
-        if let Some(hit_point) = player.plane.hit_test(&control.cursor_ray) {
-            let angle_vector = hit_point - player_transform.translation;
-            let angle = angle_vector.y.atan2(angle_vector.x);
-            if angle.is_normal() {
-                let mut matrix = Transform::from_translation(player_transform.translation);
-                matrix.rotate_z(angle - PI * 0.5);
-                *player_transform = matrix;
-            }
-            for mut weapon in weapons.0.iter_mut() {
-                weapon.direction = angle_vector.normalize_or_zero();
-                weapon.is_shooting = control.is_shooting;
-            }
-        }
-        player_transform.translation += control.direction_normal * (time.delta_seconds() * *speed);
-    }
-}
-
-fn enemy_system(
-    time: Res<Time>,
-    mut query: Query<(&mut Enemy, &mut Transform, &RotationSpeed, &mut Weapons)>,
-) {
-    for (mut enemy, mut transform, RotationSpeed(rotation_speed), mut weapons) in &mut query {
-        enemy.angle += time.delta_seconds() * *rotation_speed;
-        let mut new_transform = Transform::from_translation(transform.translation);
-        new_transform.rotate_z(enemy.angle);
-        *transform = new_transform;
-
-        let length = weapons.0.len();
-        for (i, mut weapon) in weapons.0.iter_mut().enumerate() {
-            let angle = enemy.angle + (PI * 2.0 / (length as f32)) * (i as f32);
-            weapon.direction = Vec3::new(
-                f32::cos(angle),
-                f32::sin(angle),
-                0.0
-            );
-        }
-    }
-}
-
 fn setup(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
     mut handlers: ResMut<Handlers>,
 ) {
     let material_handle = materials.add(StandardMaterial {
@@ -78,11 +33,12 @@ fn setup(
     let projectile_mesh = asset_server.load("projectile.glb#Mesh0/Primitive0");
     handlers.meshes.insert(PROJECTILE_MESH.to_string(), projectile_mesh);
 
+    // ***** Player *****
     commands
         .spawn_bundle(PbrBundle {
             mesh: ship_mesh,
             material: material_handle.clone(),
-            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            transform: Transform::from_xyz(-10.0, 0.0, 0.0),
             ..default()
         })
         .insert(Player::new())
@@ -95,32 +51,57 @@ fn setup(
         .insert(Lives(3))
         .insert(Speed(10.0));
 
-    let enemy_weapon = Weapon {
-        max_time: 0.5,
-        is_shooting: true,
-        speed: 4.0,
-        muzzle_distance: 1.7,
-        ..default()
-    };
-    let enemy_weapons = vec![
-        Weapon { direction: Vec3::new(0.0, 1.0, 0.0), ..enemy_weapon },
-        Weapon { direction: Vec3::new(0.0, -1.0, 0.0), ..enemy_weapon },
-        Weapon { direction: Vec3::new(1.0, 0.0, 0.0), ..enemy_weapon },
-        Weapon { direction: Vec3::new(-1.0, 0.0, 0.0), ..enemy_weapon },
-    ];
-
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: enemy_mesh,
-            material: material_handle.clone(),
-            transform: Transform::from_xyz(4.0, 0.0, 0.0),
+    // ***** Enemies *****
+    {
+        let enemy_weapon = Weapon {
+            max_time: 0.5,
+            is_shooting: true,
+            speed: 4.0,
+            muzzle_distance: 1.7,
             ..default()
-        })
-        .insert(Enemy::default())
-        .insert(Weapons(enemy_weapons))
-        .insert(Collider::new(1.4))
-        .insert(Lives(10))
-        .insert(RotationSpeed(0.5));
+        };
+        let enemy_weapons = vec![
+            Weapon { direction: Vec3::new(0.0, 1.0, 0.0), ..enemy_weapon },
+            Weapon { direction: Vec3::new(0.0, -1.0, 0.0), ..enemy_weapon },
+            Weapon { direction: Vec3::new(1.0, 0.0, 0.0), ..enemy_weapon },
+            Weapon { direction: Vec3::new(-1.0, 0.0, 0.0), ..enemy_weapon },
+        ];
+
+        for coord in [Vec3::new(4.0, 5.0, 0.0), Vec3::new(4.0, -5.0, 0.0)] {
+            commands
+                .spawn_bundle(PbrBundle {
+                    mesh: enemy_mesh.clone(),
+                    material: material_handle.clone(),
+                    transform: Transform::from_translation(coord),
+                    ..default()
+                })
+                .insert(Enemy::default())
+                .insert(Weapons(enemy_weapons.clone()))
+                .insert(Collider::new(1.4))
+                .insert(Lives(10))
+                .insert(RotationSpeed(0.5));
+        }
+    }
+
+    // ***** Walls *****
+    {
+        let radius = 1.4;
+        let uv_sphere_mesh = meshes.add((UVSphere {
+            radius,
+            ..default()
+        }).into());
+        for coord in [Vec3::new(4.0, 0.0, 0.0)] {
+            commands
+                .spawn_bundle(PbrBundle {
+                    mesh: uv_sphere_mesh.clone(),
+                    material: material_handle.clone(),
+                    transform: Transform::from_translation(coord),
+                    ..default()
+                })
+                .insert(Wall)
+                .insert(Collider::new(radius));
+        }
+    }
 
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(0.0, 4.0, 4.0),
@@ -128,7 +109,7 @@ fn setup(
     });
 
     commands.spawn_bundle(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 20.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 0.0, 40.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
 }
@@ -143,7 +124,8 @@ fn main() {
         .add_system(enemy_system)
         .add_system(projectile_system)
         .add_system(weapon_spawn_projectile)
-        .add_system(projectile_hit_system)
+        .add_system(projectile_hit_actor_system)
+        .add_system(projectile_hit_wall_system)
         .insert_resource(Control::new())
         .insert_resource(Handlers::new())
         .run();

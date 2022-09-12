@@ -23,3 +23,6 @@ pub struct Lives(pub i32);
 
 #[derive(Component)]
 pub struct MoveDirection(pub Vec3);
+
+#[derive(Component)]
+pub struct Wall;
