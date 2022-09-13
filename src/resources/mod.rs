@@ -1,7 +1,9 @@
 mod control;
 mod elapsed;
+mod game_state;
 mod handlers;
 
-pub use control::Control;
-pub use elapsed::Elapsed;
-pub use handlers::Handlers;
+pub use control::*;
+pub use elapsed::*;
+pub use game_state::*;
+pub use handlers::*;

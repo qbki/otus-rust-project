@@ -1,14 +1,16 @@
-mod resources;
-mod math;
 mod components;
-mod systems;
 mod consts;
+mod events;
+mod math;
+mod resources;
+mod systems;
 
 use bevy::prelude::*;
 use components::*;
 use consts::*;
-use systems::*;
+use events::*;
 use resources::*;
+use systems::*;
 
 fn setup(
     mut commands: Commands,
@@ -127,8 +129,15 @@ fn main() {
         .add_system(spawn_projectiles_system)
         .add_system(projectile_hit_actor_system)
         .add_system(projectile_hit_wall_system)
+        .add_system(game_state_system)
+        .add_system(player_lose_system)
+        .add_system(player_win_system)
+        .add_event::<StartGameEvent>()
+        .add_event::<LoseGameEvent>()
+        .add_event::<WinGameEvent>()
         .insert_resource(Control::new())
         .insert_resource(Handlers::new())
         .insert_resource(Elapsed::new())
+        .insert_resource(GameState::new())
         .run();
 }

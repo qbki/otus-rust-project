@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 use bevy::prelude::*;
 use crate::components::*;
+use crate::events::*;
 use crate::resources::*;
 
 pub fn player_control_system(
@@ -27,5 +28,25 @@ pub fn player_control_system(
             }
         }
         player_transform.translation += control.direction_normal * (time.seconds * *speed);
+    }
+}
+
+pub fn player_lose_system(
+    query: Query<&Player>,
+    mut event_writer: EventWriter<LoseGameEvent>,
+    game_state: Res<GameState>,
+) {
+    if game_state.screen == ScreenEnum::Game && query.is_empty() {
+        event_writer.send(LoseGameEvent);
+    }
+}
+
+pub fn player_win_system(
+    query: Query<&Enemy>,
+    mut event_writer: EventWriter<WinGameEvent>,
+    game_state: Res<GameState>,
+) {
+    if game_state.screen == ScreenEnum::Game && query.is_empty() {
+        event_writer.send(WinGameEvent);
     }
 }

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::app::AppExit;
-use crate::resources::Control;
+use crate::resources::*;
+use crate::events::StartGameEvent;
 
 pub fn keyboard_input_system(
     keyboard_input: Res<Input<KeyCode>>,
@@ -31,17 +32,29 @@ pub fn mouse_input_system(
     mouse_button: Res<Input<MouseButton>>,
     mut mouse_motion_events: EventReader<CursorMoved>,
     mut camera: Query<(&Camera, &GlobalTransform, &Transform)>,
+    mut start_game_event: EventWriter<StartGameEvent>,
+    game_state: Res<GameState>,
 ) {
-    let (camera, camera_global_transform, &camera_transform) = camera.single_mut();
-    if let Some(cursor_movement) = mouse_motion_events.iter().last() {
-        let usign_screen_size = camera.physical_viewport_size().unwrap();
-        let screen_size = Vec2::new(usign_screen_size.x as f32, usign_screen_size.y as f32);
-        let screen_ndc_2d = (cursor_movement.position / screen_size) * 2.0 - Vec2::ONE;
+    match game_state.screen {
+        ScreenEnum::Start => {
+            if mouse_button.pressed(MouseButton::Left) {
+                start_game_event.send(StartGameEvent);
+            }
+        }
+        ScreenEnum::Game => {
+            let (camera, camera_global_transform, &camera_transform) = camera.single_mut();
+            if let Some(cursor_movement) = mouse_motion_events.iter().last() {
+                let usign_screen_size = camera.physical_viewport_size().unwrap();
+                let screen_size = Vec2::new(usign_screen_size.x as f32, usign_screen_size.y as f32);
+                let screen_ndc_2d = (cursor_movement.position / screen_size) * 2.0 - Vec2::ONE;
 
-        let ndc_to_world_matrix = camera_global_transform.compute_matrix() * camera.projection_matrix().inverse();
+                let ndc_to_world_matrix = camera_global_transform.compute_matrix() * camera.projection_matrix().inverse();
 
-        control.cursor_ray.origin = camera_transform.translation;
-        control.cursor_ray.normal = (camera_transform.translation - ndc_to_world_matrix.project_point3(screen_ndc_2d.extend(-1.0))).normalize();
+                control.cursor_ray.origin = camera_transform.translation;
+                control.cursor_ray.normal = (camera_transform.translation - ndc_to_world_matrix.project_point3(screen_ndc_2d.extend(-1.0))).normalize();
+            }
+            control.is_shooting = mouse_button.pressed(MouseButton::Left);
+        }
+        _ => {}
     }
-    control.is_shooting = mouse_button.pressed(MouseButton::Left);
 }
