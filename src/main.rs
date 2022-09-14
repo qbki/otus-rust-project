@@ -30,9 +30,9 @@ fn setup(
     });
     handlers.materials.insert(PROJECTILE_MATERIAL.to_string(), projectile_material_handle);
 
-    let ship_mesh = asset_server.load("ship.glb#Mesh0/Primitive0");
-    let enemy_mesh = asset_server.load("enemy.glb#Mesh0/Primitive0");
-    let projectile_mesh = asset_server.load("projectile.glb#Mesh0/Primitive0");
+    let ship_mesh = asset_server.load("models/ship.glb#Mesh0/Primitive0");
+    let enemy_mesh = asset_server.load("models/enemy.glb#Mesh0/Primitive0");
+    let projectile_mesh = asset_server.load("models/projectile.glb#Mesh0/Primitive0");
     handlers.meshes.insert(PROJECTILE_MESH.to_string(), projectile_mesh);
 
     // ***** Player *****
@@ -105,11 +105,78 @@ fn setup(
         }
     }
 
+    // ***** Text *****
+    {
+        let text_style = TextStyle {
+            font: asset_server.load("fonts/fugaz-one/FugazOne-Regular.ttf"),
+            font_size: 60.0,
+            color: Color::WHITE,
+        };
+
+        let node_style = Style {
+            display: Display::None,
+            margin: UiRect::all(Val::Auto),
+            align_self: AlignSelf::Center,
+            ..default()
+        };
+
+        commands
+            .spawn_bundle(
+                TextBundle::from_sections([
+                    TextSection::new(
+                        "Fire - left mouse button\nMove left - A\nMove right - D\nMove up - W\nMove down - S\nExit game - Esc",
+                        TextStyle {
+                            font: asset_server.load("fonts/fugaz-one/FugazOne-Regular.ttf"),
+                            font_size: 30.0,
+                            color: Color::WHITE,
+                        },
+                    )
+                ])
+                .with_style(Style {
+                    position_type: PositionType::Absolute,
+                    position: UiRect { left: Val::Px(20.0), top: Val::Px(10.0), ..default() },
+                    ..default()
+                })
+            );
+
+        commands
+            .spawn_bundle(
+                TextBundle::from_sections([
+                    TextSection::new("Press Fire Button", text_style.clone()),
+                ])
+                .with_style(Style {
+                    display: Display::Flex,
+                    ..node_style.clone()
+                })
+            )
+            .insert(StartScreenText);
+
+        commands
+            .spawn_bundle(
+                TextBundle::from_sections([
+                    TextSection::new("You Win!!!", text_style.clone()),
+                ])
+                .with_style(node_style.clone())
+            )
+            .insert(WinScreenText);
+
+        commands
+            .spawn_bundle(
+                TextBundle::from_sections([
+                    TextSection::new("You Lose...", text_style.clone()),
+                ])
+                .with_style(node_style.clone())
+            )
+            .insert(LoseScreenText);
+    }
+
+    // ***** Light *****
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(0.0, 4.0, 4.0),
         ..default()
     });
 
+    // ***** Camera *****
     commands.spawn_bundle(Camera3dBundle {
         transform: Transform::from_xyz(0.0, 0.0, 40.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
@@ -118,6 +185,14 @@ fn setup(
 
 fn main() {
     App::new()
+        .insert_resource(WindowDescriptor {
+            title: "Otus Project".to_string(),
+            ..default()
+        })
+        .insert_resource(Control::new())
+        .insert_resource(Handlers::new())
+        .insert_resource(Elapsed::new())
+        .insert_resource(GameState::new())
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(elapsed_system)
@@ -135,9 +210,5 @@ fn main() {
         .add_event::<StartGameEvent>()
         .add_event::<LoseGameEvent>()
         .add_event::<WinGameEvent>()
-        .insert_resource(Control::new())
-        .insert_resource(Handlers::new())
-        .insert_resource(Elapsed::new())
-        .insert_resource(GameState::new())
         .run();
 }

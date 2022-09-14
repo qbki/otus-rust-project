@@ -26,3 +26,12 @@ pub struct MoveDirection(pub Vec3);
 
 #[derive(Component)]
 pub struct Wall;
+
+#[derive(Component)]
+pub struct StartScreenText;
+
+#[derive(Component)]
+pub struct LoseScreenText;
+
+#[derive(Component)]
+pub struct WinScreenText;
