@@ -6,7 +6,7 @@ pub struct Weapons(pub Vec<Weapon>);
 #[derive(Copy, Clone)]
 pub struct Weapon {
     pub time_left: f32, // seconds
-    pub max_time: f32, // seconds
+    pub max_time: f32,  // seconds
     pub is_shooting: bool,
     pub direction: Vec3,
     pub muzzle_distance: f32,

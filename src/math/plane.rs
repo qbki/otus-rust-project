@@ -1,5 +1,5 @@
-use bevy::math::Vec3;
 use super::ray::Ray;
+use bevy::math::Vec3;
 
 pub struct Plane {
     pub origin: Vec3,
@@ -21,4 +21,3 @@ impl Plane {
         }
     }
 }
-

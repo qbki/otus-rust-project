@@ -1,14 +1,14 @@
 mod collider;
 mod enemy;
 mod player;
-mod weapon;
 mod projectile;
+mod weapon;
 
 pub use collider::*;
 pub use enemy::*;
 pub use player::*;
-pub use weapon::*;
 pub use projectile::*;
+pub use weapon::*;
 
 use bevy::prelude::{Component, Vec3};
 

@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::math::Plane;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Player {

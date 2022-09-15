@@ -1,8 +1,8 @@
-use std::f32::consts::PI;
-use bevy::prelude::*;
 use crate::components::*;
 use crate::events::*;
 use crate::resources::*;
+use bevy::prelude::*;
+use std::f32::consts::PI;
 
 pub fn player_control_system(
     time: Res<Elapsed>,

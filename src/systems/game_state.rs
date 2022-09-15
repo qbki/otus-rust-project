@@ -1,12 +1,9 @@
-use bevy::prelude::*;
 use crate::components::*;
 use crate::events::*;
 use crate::resources::*;
+use bevy::prelude::*;
 
-fn set_visibility<T: Component>(
-    query: &mut Query<(&T, &mut Style)>,
-    value: bool,
-) {
+fn set_visibility<T: Component>(query: &mut Query<(&T, &mut Style)>, value: bool) {
     for (_, mut style) in query {
         style.display = match value {
             true => Display::Flex,

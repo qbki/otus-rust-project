@@ -1,5 +1,5 @@
-use bevy::math::Vec3;
 use crate::math::Ray;
+use bevy::math::Vec3;
 
 pub struct Control {
     pub cursor_ray: Ray,
@@ -19,4 +19,3 @@ impl Control {
         }
     }
 }
-

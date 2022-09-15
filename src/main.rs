@@ -28,12 +28,16 @@ fn setup(
         base_color: Color::rgb(0.9, 0.1, 0.1),
         ..default()
     });
-    handlers.materials.insert(PROJECTILE_MATERIAL.to_string(), projectile_material_handle);
+    handlers
+        .materials
+        .insert(PROJECTILE_MATERIAL.to_string(), projectile_material_handle);
 
     let ship_mesh = asset_server.load("models/ship.glb#Mesh0/Primitive0");
     let enemy_mesh = asset_server.load("models/enemy.glb#Mesh0/Primitive0");
     let projectile_mesh = asset_server.load("models/projectile.glb#Mesh0/Primitive0");
-    handlers.meshes.insert(PROJECTILE_MESH.to_string(), projectile_mesh);
+    handlers
+        .meshes
+        .insert(PROJECTILE_MESH.to_string(), projectile_mesh);
 
     // ***** Player *****
     commands
@@ -63,10 +67,22 @@ fn setup(
             ..default()
         };
         let enemy_weapons = vec![
-            Weapon { direction: Vec3::new(0.0, 1.0, 0.0), ..enemy_weapon },
-            Weapon { direction: Vec3::new(0.0, -1.0, 0.0), ..enemy_weapon },
-            Weapon { direction: Vec3::new(1.0, 0.0, 0.0), ..enemy_weapon },
-            Weapon { direction: Vec3::new(-1.0, 0.0, 0.0), ..enemy_weapon },
+            Weapon {
+                direction: Vec3::new(0.0, 1.0, 0.0),
+                ..enemy_weapon
+            },
+            Weapon {
+                direction: Vec3::new(0.0, -1.0, 0.0),
+                ..enemy_weapon
+            },
+            Weapon {
+                direction: Vec3::new(1.0, 0.0, 0.0),
+                ..enemy_weapon
+            },
+            Weapon {
+                direction: Vec3::new(-1.0, 0.0, 0.0),
+                ..enemy_weapon
+            },
         ];
 
         for coord in [Vec3::new(4.0, 5.0, 0.0), Vec3::new(4.0, -5.0, 0.0)] {
@@ -88,10 +104,13 @@ fn setup(
     // ***** Walls *****
     {
         let radius = 1.4;
-        let uv_sphere_mesh = meshes.add((shape::UVSphere {
-            radius,
-            ..default()
-        }).into());
+        let uv_sphere_mesh = meshes.add(
+            (shape::UVSphere {
+                radius,
+                ..default()
+            })
+            .into(),
+        );
         let coord = Vec3::new(4.0, 0.0, 0.0);
         commands
             .spawn_bundle(PbrBundle {
@@ -140,31 +159,28 @@ fn setup(
 
         commands
             .spawn_bundle(
-                TextBundle::from_sections([
-                    TextSection::new("Press Fire Button", text_style.clone()),
-                ])
+                TextBundle::from_sections([TextSection::new(
+                    "Press Fire Button",
+                    text_style.clone(),
+                )])
                 .with_style(Style {
                     display: Display::Flex,
                     ..node_style
-                })
+                }),
             )
             .insert(StartScreenText);
 
         commands
             .spawn_bundle(
-                TextBundle::from_sections([
-                    TextSection::new("You Win!!!", text_style.clone()),
-                ])
-                .with_style(node_style.clone())
+                TextBundle::from_sections([TextSection::new("You Win!!!", text_style.clone())])
+                    .with_style(node_style.clone()),
             )
             .insert(WinScreenText);
 
         commands
             .spawn_bundle(
-                TextBundle::from_sections([
-                    TextSection::new("You Lose...", text_style),
-                ])
-                .with_style(node_style)
+                TextBundle::from_sections([TextSection::new("You Lose...", text_style)])
+                    .with_style(node_style),
             )
             .insert(LoseScreenText);
     }
