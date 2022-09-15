@@ -17,7 +17,7 @@ pub fn spawn_projectiles_system(
         for weapon in weapons.0.iter_mut() {
             weapon.time_left -= time.seconds;
             if weapon.time_left <= 0.0 && weapon.is_shooting {
-                make_projectile(&mut commands, &mut material_handlers, &weapon, &transform);
+                make_projectile(&mut commands, &mut material_handlers, weapon, transform);
                 weapon.time_left = weapon.max_time;
             }
         }

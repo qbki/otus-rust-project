@@ -92,17 +92,16 @@ fn setup(
             radius,
             ..default()
         }).into());
-        for coord in [Vec3::new(4.0, 0.0, 0.0)] {
-            commands
-                .spawn_bundle(PbrBundle {
-                    mesh: uv_sphere_mesh.clone(),
-                    material: material_handle.clone(),
-                    transform: Transform::from_translation(coord),
-                    ..default()
-                })
-                .insert(Wall)
-                .insert(Collider::new(radius));
-        }
+        let coord = Vec3::new(4.0, 0.0, 0.0);
+        commands
+            .spawn_bundle(PbrBundle {
+                mesh: uv_sphere_mesh,
+                material: material_handle,
+                transform: Transform::from_translation(coord),
+                ..default()
+            })
+            .insert(Wall)
+            .insert(Collider::new(radius));
     }
 
     // ***** Text *****
@@ -146,7 +145,7 @@ fn setup(
                 ])
                 .with_style(Style {
                     display: Display::Flex,
-                    ..node_style.clone()
+                    ..node_style
                 })
             )
             .insert(StartScreenText);
@@ -163,9 +162,9 @@ fn setup(
         commands
             .spawn_bundle(
                 TextBundle::from_sections([
-                    TextSection::new("You Lose...", text_style.clone()),
+                    TextSection::new("You Lose...", text_style),
                 ])
-                .with_style(node_style.clone())
+                .with_style(node_style)
             )
             .insert(LoseScreenText);
     }
