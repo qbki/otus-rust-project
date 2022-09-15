@@ -3,8 +3,17 @@ name = "otus-rust-project"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-bevy = { version = "0.8", features = ["dynamic"] }
+[dependencies.bevy]
+version = "0.8"
+
+[target.'cfg(unix)'.dependencies.bevy]
+version = "0.8"
+features = ["dynamic"]
+
+[target.'cfg(target_arch = "wasm32")'.bevy]
+version = "0.8"
+default-features = false
+features = ["bevy_winit", "bevy_asset", "render"]
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]

@@ -1,0 +1,45 @@
+[tasks.check-formatting]
+command = "cargo"
+args = ["fmt", "--all", "--", "--check"]
+
+[tasks.format]
+command = "cargo"
+args = ["fmt"]
+
+[tasks.lint]
+command = "cargo"
+args = ["clippy", "--", "-D", "warnings"]
+
+[tasks.checks]
+run_task = { name = ["lint", "check-formatting"] }   
+
+[tasks.build]
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks.web-build]
+command = "cargo"
+args = ["build", "--release", "--target", "wasm32-unknown-unknown"]
+
+[tasks.web-create-js-wrapper]
+command = "wasm-bindgen"
+args = ["--out-dir", "./target/web/", "--target", "web", "./target/wasm32-unknown-unknown/release/otus-rust-project.wasm"]
+
+[tasks.web-copy-assets]
+command = "cp"
+args = ["-r", "./assets", "./target/web/"]
+
+[tasks.web-copy-html]
+command = "cp"
+args = ["-r", "./web/index.html", "./target/web/"]
+
+[tasks.web-clean]
+command = "rm"
+args = ["-rf", "./target/web"]
+
+[tasks.web-create-bundle]
+run_task = { name = ["web-clean", "web-build", "web-create-js-wrapper", "web-copy-assets", "web-copy-html"] }   
+
+[tasks.web-run]
+command = "python3"
+args = ["-m", "http.server", "--directory", "./target/web"]
