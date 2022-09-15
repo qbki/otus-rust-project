@@ -15,6 +15,7 @@ fn set_visibility<T: Component>(
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn game_state_system(
     mut start_game_event: EventReader<StartGameEvent>,
     mut lose_game_event: EventReader<LoseGameEvent>,
