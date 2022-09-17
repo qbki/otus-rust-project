@@ -1,6 +1,6 @@
 # Otus Project
 
-![badge](https://github.com/graydrago/otus-rust-project/actions/workflows/checks.yml/badge.svg)
+![badge](https://github.com/graydrago/otus-rust-project/actions/workflows/checks.yaml/badge.svg)
 
 A prototype of a top-down shooter.
 
