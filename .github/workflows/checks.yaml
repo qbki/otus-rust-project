@@ -23,14 +23,12 @@ jobs:
           command: install
           args: cargo-make
 
+      - name: Install alsa and udev
+              run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+
       - name: Run Checks
         uses: actions-rs/cargo@v1
         with:
           command: make
           args: checks
 
-      - name: Run Tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: make
-          args: test
