@@ -23,7 +23,7 @@ args = ["build", "--release", "--target", "wasm32-unknown-unknown"]
 
 [tasks.web-create-js-wrapper]
 command = "wasm-bindgen"
-args = ["--out-dir", "./target/web/", "--target", "web", "./target/wasm32-unknown-unknown/release/otus-rust-project.wasm"]
+args = ["--no-typescript", "--out-dir", "./target/web/", "--target", "web", "./target/wasm32-unknown-unknown/release/otus-rust-project.wasm"]
 
 [tasks.web-copy-assets]
 command = "cp"
